@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKALE Payment Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-link"></i>
+                <span>Skale Payment Tool</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#plans" class="nav-link" data-section="plans">
+                    <i class="fas fa-layer-group"></i> Plans
+                </a>
+                <a href="#subscriptions" class="nav-link" data-section="subscriptions">
+                    <i class="fas fa-credit-card"></i> Subscriptions
+                </a>
+                <a href="#analytics" class="nav-link" data-section="analytics">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+            </div>
+            <div class="nav-actions">
+                <button id="connectWallet" class="btn btn-primary">
+                    <i class="fas fa-wallet"></i>
+                    <span>Connect Wallet</span>
+                </button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <div class="wallet-address"></div>
+                    <button id="disconnectWallet" class="btn btn-secondary">Disconnect</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <div class="section-header">
+                <h1>Dashboard</h1>
+                <p>Overview of your SKALE payment activities</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalPlans">0</h3>
+                        <p>Active Plans</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalSubscribers">0</h3>
+                        <p>Subscribers</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalRevenue">0</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="monthlyGrowth">+0%</h3>
+                        <p>Monthly Growth</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Recent Activity</h3>
+                    <div id="recentActivity" class="activity-list">
+                        <div class="activity-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Connect your wallet to view activity</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn" data-action="create-plan">
+                            <i class="fas fa-plus"></i>
+                            Create New Plan
+                        </button>
+                        <button class="action-btn" data-action="view-subscriptions">
+                            <i class="fas fa-eye"></i>
+                            View Subscriptions
+                        </button>
+                        <button class="action-btn" data-action="analytics">
+                            <i class="fas fa-chart-bar"></i>
+                            View Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plans Section -->
+        <section id="plans" class="content-section">
+            <div class="section-header">
+                <h1>Subscription Plans</h1>
+                <p>Create and manage your subscription plans</p>
+                <button id="createPlanBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create New Plan
+                </button>
+            </div>
+
+            <div class="plans-grid" id="plansGrid">
+                <!-- Plans will be dynamically loaded here -->
+            </div>
+
+            <!-- Create Plan Modal -->
+            <div id="createPlanModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Create Subscription Plan</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <form id="createPlanForm" class="modal-body">
+                        <div class="form-group">
+                            <label for="planToken">Token Type</label>
+                            <select id="planToken" required>
+                                <option value="native">Native Token (ETH/SKALE)</option>
+                                <option value="custom">Custom ERC-20 Token</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="customTokenGroup" style="display: none;">
+                            <label for="customTokenAddress">Token Contract Address</label>
+                            <input type="text" id="customTokenAddress" placeholder="0x...">
+                        </div>
+                        <div class="form-group">
+                            <label for="planAmount">Amount per Payment</label>
+                            <input type="number" id="planAmount" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="planInterval">Payment Interval (days)</label>
+                            <input type="number" id="planInterval" min="1" value="30" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="planDuration">Total Duration (days)</label>
+                            <input type="number" id="planDuration" min="1" value="365" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="planApiUrl">Protected API URL</label>
+                            <input type="url" id="planApiUrl" placeholder="https://api.example.com/protected" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="planDescription">Description</label>
+                            <textarea id="planDescription" rows="3" placeholder="Describe your subscription plan..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Create Plan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Subscriptions Section -->
+        <section id="subscriptions" class="content-section">
+            <div class="section-header">
+                <h1>My Subscriptions</h1>
+                <p>Manage your active subscriptions</p>
+            </div>
+
+            <div class="subscriptions-container">
+                <div class="subscription-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="expired">Expired</button>
+                    <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+                </div>
+
+                <div class="subscriptions-grid" id="subscriptionsGrid">
+                    <!-- Subscriptions will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Subscribe Modal -->
+            <div id="subscribeModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Subscribe to Plan</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="subscriptionDetails" class="subscription-details">
+                            <!-- Plan details will be populated here -->
+                        </div>
+                        <div class="payment-section">
+                            <h3>Payment Information</h3>
+                            <div class="payment-summary">
+                                <div class="payment-row">
+                                    <span>Amount:</span>
+                                    <span id="paymentAmount">-</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>Token:</span>
+                                    <span id="paymentToken">-</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>Interval:</span>
+                                    <span id="paymentInterval">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                            <button id="confirmSubscription" class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i>
+                                Subscribe & Pay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <div class="section-header">
+                <h1>Analytics</h1>
+                <p>Track your subscription performance</p>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>Revenue Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>Subscription Status</h3>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>Top Performing Plans</h3>
+                    <div id="topPlans" class="top-plans-list">
+                        <!-- Top plans will be populated here -->
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>Payment History</h3>
+                    <div id="paymentHistory" class="payment-history">
+                        <!-- Payment history will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/web3-integration.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
