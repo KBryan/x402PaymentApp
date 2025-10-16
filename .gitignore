@@ -28,3 +28,10 @@ broadcast/
 anvil.log
 ganache.log
 node_modules/
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
