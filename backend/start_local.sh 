@@ -1,0 +1,177 @@
+#!/bin/bash
+
+# SKALE Payment Tool - Local Development Startup Script
+# This script starts everything you need for local testing
+
+set -e  # Exit on error
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}"
+echo "╔═══════════════════════════════════════════╗"
+echo "║   SKALE Payment Tool - Local Setup       ║"
+echo "╔═══════════════════════════════════════════╗"
+echo -e "${NC}"
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check prerequisites
+echo -e "${BLUE}Checking prerequisites...${NC}"
+
+if ! command_exists python3; then
+    echo -e "${RED}❌ Python 3 not found. Please install Python 3.10+${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Python 3 found${NC}"
+
+if ! command_exists forge; then
+    echo -e "${YELLOW}⚠️  Forge not found in PATH${NC}"
+    if [ -f "$HOME/.foundry/bin/forge" ]; then
+        export PATH="$HOME/.foundry/bin:$PATH"
+        echo -e "${GREEN}✓ Using Forge from ~/.foundry/bin${NC}"
+    else
+        echo -e "${RED}❌ Forge not installed. Install with: curl -L https://foundry.paradigm.xyz | bash${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✓ Forge found${NC}"
+fi
+
+# Step 1: Setup Backend
+echo -e "\n${BLUE}Step 1: Setting up backend...${NC}"
+
+cd backend
+
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies if needed
+if ! python -c "import fastapi" 2>/dev/null; then
+    echo "Installing dependencies..."
+    pip install -q -r requirements.txt
+fi
+echo -e "${GREEN}✓ Backend dependencies ready${NC}"
+
+# Setup database
+echo -e "\n${BLUE}Choosing database...${NC}"
+
+if command_exists docker && docker ps >/dev/null 2>&1; then
+    echo "Docker available - setting up PostgreSQL..."
+
+    # Check if container exists
+    if docker ps -a --format '{{.Names}}' | grep -q "^skale-postgres$"; then
+        echo "Starting existing PostgreSQL container..."
+        docker start skale-postgres >/dev/null 2>&1 || true
+    else
+        echo "Creating PostgreSQL container..."
+        docker run -d \
+          --name skale-postgres \
+          -e POSTGRES_DB=skale_payments \
+          -e POSTGRES_USER=skale_user \
+          -e POSTGRES_PASSWORD=skale_pass_2024 \
+          -p 5432:5432 \
+          postgres:15-alpine >/dev/null 2>&1
+        echo "Waiting for PostgreSQL to start..."
+        sleep 5
+    fi
+
+    DATABASE_URL="postgresql://skale_user:skale_pass_2024@localhost:5432/skale_payments"
+    echo -e "${GREEN}✓ PostgreSQL ready${NC}"
+else
+    echo "Using SQLite (Docker not available)..."
+    DATABASE_URL="sqlite:///./skale_payments.db"
+    echo -e "${GREEN}✓ SQLite ready${NC}"
+fi
+
+# Create .env file
+cat > .env << EOF
+DATABASE_URL=$DATABASE_URL
+SKALE_RPC_URL=http://127.0.0.1:8545
+CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+CHAIN_ID=31337
+CORS_ORIGINS=http://localhost:3000
+EOF
+
+echo -e "${GREEN}✓ Configuration saved${NC}"
+
+cd ..
+
+# Step 2: Setup Contracts
+echo -e "\n${BLUE}Step 2: Setting up smart contracts...${NC}"
+
+cd contracts
+
+# Compile contracts
+echo "Compiling contracts..."
+forge build >/dev/null 2>&1
+echo -e "${GREEN}✓ Contracts compiled${NC}"
+
+# Run tests
+echo "Running contract tests..."
+if forge test >/dev/null 2>&1; then
+    echo -e "${GREEN}✓ All contract tests passed${NC}"
+else
+    echo -e "${YELLOW}⚠️  Some contract tests failed (continuing anyway)${NC}"
+fi
+
+cd ..
+
+# Step 3: Instructions for starting services
+echo -e "\n${GREEN}╔═══════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║          Setup Complete!                  ║${NC}"
+echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
+
+echo -e "\n${BLUE}To start testing, open 3 terminals:${NC}\n"
+
+echo -e "${YELLOW}Terminal 1 - Blockchain:${NC}"
+echo "  cd contracts"
+echo "  anvil"
+echo ""
+
+echo -e "${YELLOW}Terminal 2 - Deploy Contract:${NC}"
+echo "  cd contracts"
+echo "  forge script script/Deploy.s.sol \\"
+echo "    --rpc-url http://127.0.0.1:8545 \\"
+echo "    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \\"
+echo "    --broadcast"
+echo ""
+
+echo -e "${YELLOW}Terminal 3 - Backend API:${NC}"
+echo "  cd backend"
+echo "  source venv/bin/activate"
+echo "  python main.py"
+echo ""
+
+echo -e "${BLUE}Or use this quick test command:${NC}"
+echo "  cd backend && source venv/bin/activate && python main.py"
+echo ""
+
+echo -e "${GREEN}Database:${NC} $DATABASE_URL"
+echo -e "${GREEN}API will run at:${NC} http://localhost:8000"
+echo -e "${GREEN}API docs at:${NC} http://localhost:8000/docs"
+echo ""
+
+# Offer to start API now
+read -p "Start the API now? (y/N) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "\n${BLUE}Starting API...${NC}"
+    echo -e "${YELLOW}Note: You still need to start Anvil and deploy contracts in separate terminals${NC}\n"
+    cd backend
+    source venv/bin/activate
+    python main.py
+fi
