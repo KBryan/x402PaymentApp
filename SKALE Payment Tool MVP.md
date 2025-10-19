@@ -1001,21 +1001,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Foundry** for smart contract development tools
 - **Chart.js** for data visualization components
 
-## Support
-
-### Documentation
-- [API Documentation](https://docs.skale-payment-tool.com/api)
-- [Smart Contract Documentation](https://docs.skale-payment-tool.com/contracts)
-- [Frontend Guide](https://docs.skale-payment-tool.com/frontend)
-
-### Community
-- [Discord](https://discord.gg/skale-payment-tool)
-- [Telegram](https://t.me/skale_payment_tool)
-- [GitHub Discussions](https://github.com/skale-payment-tool/discussions)
 
 ### Professional Support
-- Email: support@skale-payment-tool.com
-- Enterprise: enterprise@skale-payment-tool.com
+- Email: kwame@playonquake.com
 
 ---
 
