@@ -283,30 +283,81 @@ class Web3Integration {
 }
 
 // SKALE Chain configurations
-const SKALE_CHAINS = {
-    testnet: {
-        chainId: '0x561bf78b', // SKALE Calypso Hub Testnet
-        chainName: 'SKALE Calypso Hub Testnet',
-        nativeCurrency: {
-            name: 'sFUEL',
-            symbol: 'sFUEL',
-            decimals: 18
+const NETWORKS = {
+    skale: {
+        testnet: {
+            chainId: '0x561bf78b', // SKALE Calypso Hub Testnet
+            chainName: 'SKALE Calypso Hub Testnet',
+            nativeCurrency: {
+                name: 'sFUEL',
+                symbol: 'sFUEL',
+                decimals: 18
+            },
+            rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'],
+            blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com']
         },
-        rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'],
-        blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com']
+        mainnet: {
+            chainId: '0x561bf78a', // SKALE Calypso Hub
+            chainName: 'SKALE Calypso Hub',
+            nativeCurrency: {
+                name: 'sFUEL',
+                symbol: 'sFUEL',
+                decimals: 18
+            },
+            rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'],
+            blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com']
+        },
+        nebula: {
+            testnet: {
+                chainId: '0x3a1d5b0', // Nebula Gaming Chain Testnet
+                chainName: 'Nebula Gaming Chain Testnet',
+                nativeCurrency: {
+                    name: 'sFUEL',
+                    symbol: 'sFUEL',
+                    decimals: 18
+                },
+                rpcUrls: ['https://testnet.skalenodes.com/v1/aware-gorgon-staging'],
+                blockExplorerUrls: ['https://aware-gorgon-staging.explorer.testnet.skalenodes.com']
+            },
+            mainnet: {
+                chainId: '0x3a1d5af', // Nebula Gaming Chain Mainnet
+                chainName: 'Nebula Gaming Chain',
+                nativeCurrency: {
+                    name: 'sFUEL',
+                    symbol: 'sFUEL',
+                    decimals: 18
+                },
+                rpcUrls: ['https://mainnet.skalenodes.com/v1/green-giddy-denebola'],
+                blockExplorerUrls: ['https://green-giddy-denebola.explorer.mainnet.skalenodes.com']
+            }
+        }
     },
-    mainnet: {
-        chainId: '0x561bf78a', // SKALE Calypso Hub
-        chainName: 'SKALE Calypso Hub',
-        nativeCurrency: {
-            name: 'sFUEL',
-            symbol: 'sFUEL',
-            decimals: 18
+    base: {
+        testnet: {
+            chainId: '0x14a33', // Base Sepolia Testnet
+            chainName: 'Base Sepolia Testnet',
+            nativeCurrency: {
+                name: 'Ethereum',
+                symbol: 'ETH',
+                decimals: 18
+            },
+            rpcUrls: ['https://sepolia.base.org'],
+            blockExplorerUrls: ['https://sepolia.basescan.org']
         },
-        rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'],
-        blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com']
+        mainnet: {
+            chainId: '0x2105', // Base Mainnet
+            chainName: 'Base Mainnet',
+            nativeCurrency: {
+                name: 'Ethereum',
+                symbol: 'ETH',
+                decimals: 18
+            },
+            rpcUrls: ['https://mainnet.base.org'],
+            blockExplorerUrls: ['https://basescan.org']
+        }
     }
 };
+
 
 // Payment signature helper
 class PaymentSigner {
